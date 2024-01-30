@@ -1,8 +1,8 @@
-# Final work 
-## Информация о проекте
+# __Final work__ 
+## Introduction
 Необходимо организовать систему учета для питомника в котором живут
 домашние и вьючные животные.
-### 1 part: 
+### 1 part: (Linux)
 1. Создать
 два файла Домашние животные и Вьючные животные:
 ```
@@ -74,3 +74,98 @@ history
 войдут: Лошади, верблюды и ослы).
 
 ![Диаграмма показывает наглядно extends и implements](images/diagram.jpg)
+
+
+## part 2: (MySQL)
+7. В подключенном MySQL репозитории создать базу данных “Друзья
+человека”
+
+```
+CREATE DATABASE humanFriends;
+USE humanFriends;
+```
+
+8. Создать таблицы с иерархией из диаграммы в БД
+```
+CREATE TABLE IF NOT EXISTS cats(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+CREATE TABLE IF NOT EXISTS dogs(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+CREATE TABLE IF NOT EXISTS hamsters(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+CREATE TABLE IF NOT EXISTS horses(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+CREATE TABLE IF NOT EXISTS camels(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+CREATE TABLE IF NOT EXISTS donkies(
+	id INT PRIMARY KEY AUTO_INCREMENT,
+	animal_name VARCHAR(100) NOT NULL,
+    birth DATE NOT NULL,
+    commands TEXT
+);
+```
+
+9. Заполнить низкоуровневые таблицы именами(животных), командами
+которые они выполняют и датами рождения
+
+```
+INSERT INTO cats (animal_name, birth, commands)
+VALUES ('Mr meow', '2017-02-27', 'meow');
+
+INSERT INTO dogs (animal_name, birth, commands)
+VALUES ('Bark', '2018-02-27', 'bark'),
+('Pluto', '2022-02-27', 'bark, double bark');
+
+INSERT INTO hamsters (animal_name, birth, commands)
+VALUES ('NomNom', '2023-09-27', 'squeek');
+
+INSERT INTO horses (animal_name, birth, commands)
+VALUES ('Black Raven', '2012-08-19', 'run around');
+
+INSERT INTO camels (animal_name, birth, commands)
+VALUES ('Chill', '2017-03-07', 'drink water');
+
+INSERT INTO donkies (animal_name, birth, commands)
+VALUES ('Donley', '2017-02-27', 'talk');
+```
+
+10. Удалив из таблицы верблюдов, т.к. верблюдов решили перевезти в другой
+питомник на зимовку. Объединить таблицы лошади, и ослы в одну таблицу.
+
+```
+DROP TABLE camels;
+INSERT INTO horses (animal_name, birth, commands)
+SELECT animal_name, birth, commands
+FROM donkies;
+
+DROP TABLE donkies;
+
+RENAME TABLE horses TO horses_donkies;
+```
+
+11.Создать новую таблицу “молодые животные” в которую попадут все
+животные старше 1 года, но младше 3 лет и в отдельном столбце с точностью
+до месяца подсчитать возраст животных в новой таблице
+
+12. Объединить все таблицы в одну, при этом сохраняя поля, указывающие на
+прошлую принадлежность к старым таблицам.
