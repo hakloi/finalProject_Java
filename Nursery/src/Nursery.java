@@ -18,7 +18,6 @@ public class Nursery implements AutoCloseable {
   public void teachCommand(Animal animal, String command) {
     animal.setCommand(command);
 
-    // Запись данных 
     try (FileWriter writer = new FileWriter("DataBase.csv", true)) {
       String animalType = getAnimalType(animal);
       String animalName = animal.getName();
@@ -82,8 +81,11 @@ public class Nursery implements AutoCloseable {
 
   public static void main(String[] args) throws Exception {
     try (Nursery Nursery = new Nursery()) {
-      Scanner scanner = new Scanner(System.in);
-      while (true) {
+        // clear terminal
+        System.out.print("\033[H\033[2J");
+        System.out.flush();
+        Scanner scanner = new Scanner(System.in);
+        while (true) {
         System.out.println("1. Add new animal");
         System.out.println("2. Teach command");
         System.out.println("3. Get commands");
