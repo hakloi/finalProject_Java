@@ -1,91 +1,191 @@
-import java.time.LocalDate;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 
-public class Nursery {
-    private List<Animals> animals;
-    private Scanner scanner;
 
-    public Nursery() {
-        this.animals = new ArrayList<>();
-        this.scanner = new Scanner(System.in);
+public class Nursery implements AutoCloseable {
+
+  private List<Animal> animals = new ArrayList<>();
+
+  private static Counter counter = new Counter();
+
+  public void addNewAnimal(Animal animal) {
+    animals.add(animal);
+    counter.add();
+  }
+
+  public void teachCommand(Animal animal, String command) {
+    animal.setCommand(command);
+
+    // Запись данных 
+    try (FileWriter writer = new FileWriter("DataBase.csv", true)) {
+      String animalType = getAnimalType(animal);
+      String animalName = animal.getName();
+      String line = animalType + "," + animalName + "," + command + "\n";
+      writer.write(line);
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  private String getAnimalType(Animal animal) {
+    if (animal instanceof Dog) {
+      return "Dog";
+    } else if (animal instanceof Cat) {
+      return "Cat";
+    } else if (animal instanceof Hamster) {
+      return "Hamster";
+    } else if (animal instanceof Horse) {
+      return "Horse";
+    } else if (animal instanceof Camel) {
+      return "Camel";
+    } else if (animal instanceof Donkey) {
+      return "Donkey";
+    }
+    return "";
+  }
+
+  public List<String> getCommands(Animal animal) {
+    List<String> commands = new ArrayList<>();
+    commands.add(animal.getCommand());
+    return commands;
+  }
+
+  public void readDatabase() {
+    File databaseFile = new File("DataBase.csv");
+    if (!databaseFile.exists()) {
+      try {
+        databaseFile.createNewFile();
+      } catch (IOException e) {
+        e.printStackTrace();
+      }
     }
 
-    
+    try (BufferedReader reader = new BufferedReader(new FileReader(databaseFile))) {
+      String line;
+      while ((line = reader.readLine()) != null) {
+        String[] data = line.split(",");
+        if (data.length >= 2) {
+          String animalName = data[0];
+          String command = data[1];
+          Animal animal = animals.stream().filter(a -> a.getName().equals(animalName)).findFirst().orElse(null);
+          if (animal != null) {
+            animal.setCommand(command);
+          }
+        }
+      }
+    } catch (IOException e) {
+      e.printStackTrace();
+    }
+  }
+
+  public static void main(String[] args) throws Exception {
+    try (Nursery Nursery = new Nursery()) {
+      Scanner scanner = new Scanner(System.in);
+      while (true) {
+        System.out.println("1. Add new animal");
+        System.out.println("2. Teach command");
+        System.out.println("3. Get commands");
+        System.out.println("4. Exit");
+        int choice = scanner.nextInt();
+        scanner.nextLine();
+        switch (choice) {
+          case 1:
+            System.out.println("Enter animal type: ");
+            String type = scanner.nextLine();
+            System.out.println("Enter animal name: ");
+            String name = scanner.nextLine();
+            Animal animal;
+            switch (type) {
+              case "Dog":
+                animal = new Dog(name);
+                break;
+              case "Cat":
+                animal = new Cat(name);
+                break;
+              case "Hamster":
+                animal = new Hamster(name);
+                break;
+              case "Horse":
+                animal = new Horse(name);
+                break;
+              case "Camel":
+                animal = new Camel(name);
+                break;
+              case "Donkey":
+                animal = new Donkey(name);
+                break;
+              default:
+                throw new IllegalStateException("Unexpected value: " + type);
+            }
+            Nursery.addNewAnimal(animal);
+            break;
+          case 2:
+            System.out.println("Enter animal name: ");
+            String animalName = scanner.nextLine();
+            Animal foundAnimal = Nursery.animals.stream()
+                .filter(a -> a.getName().equals(animalName))
+                .findFirst()
+                .orElse(null);
+            if (foundAnimal == null) {
+              System.out.println("No such animal");
+              break;
+            }
+            System.out.println("Enter command: ");
+            String command = scanner.nextLine();
+            Nursery.teachCommand(foundAnimal, command);
+            break;
+          case 3:
+            System.out.println("Enter animal name: ");
+            String aName = scanner.nextLine();
+            Animal fAnimal = Nursery.animals.stream()
+                .filter(a -> a.getName().equals(aName))
+                .findFirst()
+                .orElse(null);
+            if (fAnimal == null) {
+              System.out.println("No such animal");
+              break;
+            }
+            List<String> commands = Nursery.getCommands(fAnimal);
+            for (String cmd : commands) {
+              System.out.println(cmd);
+            }
+            break;
+          case 4:
+            return;
+        }
+      }
+    } catch (Exception e) {
+      throw e;
+    }
+  }
+
+  @Override
+  public void close() throws Exception {
+    if (counter.getCount() == 0) {
+      throw new Exception("Counter was not used in try-with-resources block");
+    } else {
+      counter.resetCount();
+    }
+  }
+
 }
 
+class Counter {
 
-// private void addNewAnimal() {
-//     String name = getStringInput("Enter the animal name: ");
-//     LocalDate birthDate = getBirthDateInput();
-//     String type = getStringInput("Enter the animal type (domestic/pack): ");
+  private int count;
 
-//     if (type.equalsIgnoreCase("domestic")) {
-//         addDomesticAnimal(name, birthDate);
-//     } else if (type.equalsIgnoreCase("pack")) {
-//         addPackAnimal(name, birthDate);
-//     } else {
-//         System.out.println("Invalid animal type, please try again.");
-//     }
-// }
+  public void add() {
+    count++;
+  }
 
-// private void addDomesticAnimal(String name, LocalDate birthDate) {
-//     String breed = getStringInput("Enter the animal breed: ");
+  public int getCount() {
+    return count;
+  }
 
-//     String animalType = getStringInput(
-//             "Enter the animal type (cat/dog/hamster): ");
+  public void resetCount() {
+    count = 0;
+  }
 
-//     if (animalType.equalsIgnoreCase("cat")) {
-//         animals.add(new Cats(name, birthDate, breed));
-//     } else if (animalType.equalsIgnoreCase("dog")) {
-//         animals.add(new Dogs(name, birthDate, breed));
-//     } else if (animalType.equalsIgnoreCase("hamster")) {
-//         animals.add(new Hamsters(name, birthDate, breed));
-//     } else {
-//         System.out.println("Invalid animal type, please try again.");
-//     }
-// }
-
-// private void addPackAnimal(String name, LocalDate birthDate) {
-//     String species = getStringInput("Enter the animal species: ");
-
-//     String animalType = getStringInput(
-//             "Enter the animal type (horse/camel/donkey): ");
-
-//     if (animalType.equalsIgnoreCase("horse")) {
-//         animals.add(new Horses(name, birthDate, species));
-//     } else if (animalType.equalsIgnoreCase("camel")) {
-//         animals.add(new Camels(name, birthDate, species));
-//     } else if (animalType.equalsIgnoreCase("donkey")) {
-//         animals.add(new Donkeys(name, birthDate, species));
-//     } else {
-//         System.out.println("Invalid animal type, please try again.");
-//     }
-// }
-
-// private void listAnimals() {
-//     if (animals.isEmpty()) {
-//         System.out.println("No animals registered yet.");
-//         return;
-//     }
-
-//     System.out.println("Registered animals:");
-
-//     for (Animals animal : animals) {
-//         System.out.println(animal.getName() + " - " + animal.getClass().getSimpleName());
-//     }
-// }
-
-// private void trainAnimal() {
-//     if (animals.isEmpty()) {
-//         System.out.println("No animals registered yet.");
-//         return;
-//     }
-
-//     String animalName = getStringInput("Enter the name of the animal you want to train: ");
-
-//     Animals animal = findAnimal(animalName);
-
-//     if (animal == null) {
-//         System.out.println("Animal not found.");
+}
